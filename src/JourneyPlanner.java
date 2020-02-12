@@ -1,19 +1,16 @@
-import java.util.*;
-import java.io.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
-public class JourneyPlanner
-{
-    public static void main(String args[])
-    {
-        String start = "rye"; 		/* default start state */
-        String finish = "tent";		/* default finish state */
+public class JourneyPlanner {
+    public static void main(String args[]) {
+        String start = "rye";        /* default start state */
+        String finish = "tent";        /* default finish state */
 
-        if (args.length >= 1)
-        {
+        if (args.length >=  1) {
             start = args[0];
         }
-        if (args.length >= 2)
-        {
+        if (args.length >= 2) {
             finish = args[1];
         }
 
@@ -22,10 +19,8 @@ public class JourneyPlanner
         System.out.println("route = " + route);
     }
 
-    public List<String> nextConfigs(String state)
-    {
-        switch (state)
-        {
+    public List<String> nextConfigs(String state) {
+        switch (state) {
             case "ash":
                 return Arrays.asList("chart", "fav", "folk", "harr", "hy", "nr", "rye", "tent");
             case "bar":
@@ -85,35 +80,25 @@ public class JourneyPlanner
         }
     }
 
-    public LinkedList<String> iterativeDeepening(String first, String last)
-    {
-        for (int depth = 1; true; depth++)
-        {
+    public LinkedList<String> iterativeDeepening(String first, String last) {
+        for (int depth = 1; true; depth++) {
             LinkedList<String> route = depthFirst(first, last, depth);
             if (route != null) return route;
         }
     }
 
-    private LinkedList<String> depthFirst(String first, String last, int depth)
-    {
-        if (depth == 0)
-        {
+    private LinkedList<String> depthFirst(String first, String last, int depth) {
+        if (depth == 0) {
             return null;
-        }
-        else if (first.equals(last))
-        {
+        } else if (first.equals(last)) {
             LinkedList<String> route = new LinkedList<String>();
             route.add(first);
             return route;
-        }
-        else
-        {
+        } else {
             List<String> nexts = nextConfigs(first);
-            for (String next:nexts)
-            {
+            for (String next : nexts) {
                 LinkedList<String> route = depthFirst(next, last, depth - 1);
-                if (route != null)
-                {
+                if (route != null) {
                     route.addFirst(first);
                     return route;
                 }
