@@ -1,3 +1,8 @@
+/**
+ * user: jl653
+ * name: Joseph Ling
+ */
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,89 +20,62 @@ public class JourneyPlanner {
         }
 
         JourneyPlanner planner = new JourneyPlanner();
-        LinkedList<String> route = planner.iterativeDeepening(start, finish);
-        System.out.println("route = " + route);
+//        LinkedList<Vertex> route = planner.iterativeDeepening(start, finish);
+//        System.out.println("route = " + route);
     }
 
-    public List<String> nextConfigs(String state) {
-        switch (state) {
-            case "ash":
-                return Arrays.asList("chart", "fav", "folk", "harr", "hy", "nr", "rye", "tent");
-            case "bar":
-                return Arrays.asList("cant", "dov", "folk");
-            case "cant":
-                return Arrays.asList("bar", "chart", "fav", "sand", "st", "whit");
-            case "chart":
-                return Arrays.asList("ash", "cant", "harr");
-            case "cran":
-                return Arrays.asList("hast", "maid");
-            case "deal":
-                return Arrays.asList("dov", "sand");
-            case "dov":
-                return Arrays.asList("bar", "deal", "folk", "sand");
-            case "dung":
-                return Arrays.asList();
-            case "fav":
-                return Arrays.asList("ash", "cant", "whit");
-            case "folk":
-                return Arrays.asList("ash", "bar", "dov", "hy");
-            case "gill":
-                return Arrays.asList("graves", "sit");
-            case "graves":
-                return Arrays.asList("gill", "maid");
-            case "harr":
-                return Arrays.asList("ash", "chart", "maid");
-            case "hast":
-                return Arrays.asList("cran", "rye", "tent");
-            case "hb":
-                return Arrays.asList("mar", "st", "whit");
-            case "hy":
-                return Arrays.asList("ash", "folk", "nr");
-            case "maid":
-                return Arrays.asList("cran", "graves", "harr", "sit", "tent");
-            case "mar":
-                return Arrays.asList("hb", "rams", "st");
-            case "nr":
-                return Arrays.asList("ash", "hy", "rye");
-            case "rams":
-                return Arrays.asList("mar", "sand", "st");
-            case "rye":
-                return Arrays.asList("ash", "hast", "nr", "tent");
-            case "sand":
-                return Arrays.asList("cant", "deal", "dov", "rams");
-            case "sheer":
-                return Arrays.asList("sit");
-            case "sit":
-                return Arrays.asList("gill", "maid", "sheer");
-            case "st":
-                return Arrays.asList("cant", "hb", "mar", "rams");
-            case "tent":
-                return Arrays.asList("ash", "hast", "maid", "rye");
-            case "whit":
-                return Arrays.asList("cant", "fav", "hb");
-            default:
-                return null;
-        }
+    /**
+     * This should be side effect free
+     *
+     * no more than enurmate all the vertices which are connected with a single
+     * straight line segment to the given state `state`.
+     *
+     * These adjacent tates are those vertices which can be reached from state
+     * in a single straight line without passing through the interior of any rhombus.
+     *
+     * A vertex of one rhombus can arise on the edge of another rhumbus. So this
+     * method will have to perform case analysis (which is typical of this kind of
+     * problem).
+     *
+     * Check the code carefully before plugging it into the algorithm.
+     *
+     * MAKE SURE:
+     * - this method only find's adjacent states
+     * - implement a simple one first before making it complicated
+     * - spend time considering how a journey can navigate around the objstacles
+     * otherwise nextCOnfig will be buggy and incomplete.
+     *
+     * do not implement:
+     * - a search algorithm with poor space behaviour such as Dijkstra's, BFS
+     * - or implement A* without carefully choosing the hueristics AND DOCUMENTING THEM!!!
+     *
+     *
+     * @param state
+     * @return
+     */
+    public List<Vertex> nextConfigs(Vertex state) {
+
+        return null;
     }
 
-    public LinkedList<String> iterativeDeepening(String first, String last) {
+    public LinkedList<Vertex> iterativeDeepening(Vertex first, Vertex last) {
         for (int depth = 1; true; depth++) {
-            LinkedList<String> route = depthFirst(first, last, depth);
+            LinkedList<Vertex> route = depthFirst(first, last, depth);
             if (route != null) return route;
         }
     }
 
-    private LinkedList<String> depthFirst(String first, String last, int depth) {
+    private LinkedList<Vertex> depthFirst(Vertex first, Vertex last, int depth) {
         if (depth == 0) {
             return null;
         } else if (first.equals(last)) {
-            LinkedList<String> route = new LinkedList<String>();
+            LinkedList<Vertex> route = new LinkedList<Vertex>();
             route.add(first);
             return route;
         } else {
-            List<String> nexts = nextConfigs(first);
-            for (String next : nexts) {
-                LinkedList<String> route = depthFirst(next, last, depth - 1);
+            List<Vertex> nexts = nextConfigs(first);
+            for (Vertex next : nexts) {
+                LinkedList<Vertex> route = depthFirst(next, last, depth - 1);
                 if (route != null) {
                     route.addFirst(first);
                     return route;

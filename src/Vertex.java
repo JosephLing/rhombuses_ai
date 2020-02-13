@@ -1,3 +1,8 @@
+/**
+ * user: jl653
+ * name: Joseph Ling
+ */
+
 public class Vertex implements Comparable<Vertex> {
     private int x;
     private int y;
