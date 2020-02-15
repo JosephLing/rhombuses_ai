@@ -9,8 +9,9 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 public class FormatChecker {
-    public static void main(String args[]) {
-        try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
+
+    public static void check(String file_name) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file_name))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
 
@@ -28,6 +29,10 @@ public class FormatChecker {
         } catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
         }
+    }
+
+    public static void main(String args[]) {
+        check(args[0]);
     }
 
     public static boolean parse_opening_bracket(StringTokenizer st) {
