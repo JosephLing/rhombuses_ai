@@ -8,9 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JourneyPlanner {
@@ -18,6 +16,7 @@ public class JourneyPlanner {
 
     /**
      * Reads in all the rhombuses until it reaches an empty line then reads in puzzles
+     *
      * @param pathToCsv string
      * @return rhombuses
      * @throws IOException
@@ -57,6 +56,7 @@ public class JourneyPlanner {
     public static void main(String[] args) throws IOException {
         // if it can't find the file use me:
         // System.out.println(System.getProperty("user.dir"));;
+        cache = new HashMap<>();
 
         String file_name = "jl653.csv";
         if (args.length == 1) {
@@ -68,21 +68,26 @@ public class JourneyPlanner {
         ArrayList<Vertex[]> rhombus = loadConfig(file_name);
         String output_path;
         for (int i = 0; i < puzzles.size(); i++) {
-            output_path = String.format("./%s.txt", i+1);
+            output_path = String.format("./%s.txt", i + 1);
             Files.write(
                     Paths.get(output_path),
-                    new JourneyPlanner(rhombus).depthFirst(puzzles.get(i)[0], puzzles.get(i)[1], 4).stream().map(Object::toString)
+                    new JourneyPlanner(rhombus).iterativeDeepening(puzzles.get(i)[0], puzzles.get(i)[1]).stream().map(Object::toString)
                             .collect(Collectors.joining(" ")).getBytes()
             );
             FormatChecker.check(output_path);
+            if (testing){
+                break;
+            }
         }
     }
 
 
-    private ArrayList<Vertex[]> rhombus;
+    private ArrayList<Vertex[]> rhombuses;
+
+    private static HashMap<Vertex, ArrayList<Vertex>> cache;
 
     public JourneyPlanner(ArrayList<Vertex[]> rhombus) {
-        this.rhombus = rhombus;
+        this.rhombuses = rhombus;
     }
 
     /**
@@ -91,7 +96,7 @@ public class JourneyPlanner {
      * no more than enurmate all the vertices which are connected with a single
      * straight line segment to the given state `state`.
      * <p>
-     * These adjacent tates are those vertices which can be reached from state
+     * These adjacent states are those vertices which can be reached from state
      * in a single straight line without passing through the interior of any rhombus.
      * <p>
      * A vertex of one rhombus can arise on the edge of another rhumbus. So this
@@ -114,39 +119,107 @@ public class JourneyPlanner {
      * @return
      */
     public List<Vertex> nextConfigs(Vertex state) {
+        // so what vertex are in a straight line from this current state
+        // could go through all the vertexs or a pre computed list that has got rid of the intersections
 
-        return null;
+        if (cache.get(state) == null) {
+            HashSet<Vertex> set = new HashSet<>();
+            for (Vertex[] rhombus : rhombuses) {
+                for (Vertex vertex : rhombus) {
+                    if (!set.contains(vertex) && isReachable(state, vertex)) {
+                        set.add(vertex);
+                    }
+                }
+            }
+            ArrayList<Vertex> results = new ArrayList<>(set);
+            cache.put(state, results);
+            return results;
+
+        } else {
+            return cache.get(state);
+        }
+
     }
 
-    public LinkedList<Vertex> iterativeDeepening(Vertex first, Vertex last) {
-        for (int depth = 1; true; depth++) {
-            LinkedList<Vertex> route = depthFirst(first, last, depth);
-            if (route != null) return route;
+    private boolean isReachable(Vertex start, Vertex end) {
+//        System.out.println(String.format("start %s end %s", start, end));
+        boolean check = true;
+        Vertex[] rhombus;
+        for (int i = 0; i < rhombuses.size(); i++) {
+            rhombus = rhombuses.get(i);
+
+            // if anything doesn't intersect continue
+            check = !(
+                    Vertex.linesIntersect(start, end, rhombus[0], rhombus[1])
+                            || Vertex.linesIntersect(start, end, rhombus[0], rhombus[2])
+                            || Vertex.linesIntersect(start, end, rhombus[1], rhombus[3])
+                            || Vertex.linesIntersect(start, end, rhombus[2], rhombus[3])
+            );
+//                    ||
+//                    !(
+//                    Vertex.linesIntersect(end, start, rhombus[0], rhombus[1])
+//                            || Vertex.linesIntersect(end, start, rhombus[0], rhombus[2])
+//                            || Vertex.linesIntersect(end, start, rhombus[1], rhombus[3])
+//                            || Vertex.linesIntersect(end, start, rhombus[2], rhombus[3])
+//            );
+
+            if (!check) {
+                return false;
+            }
         }
+        return check;
+    }
+
+    private static boolean testing = true;
+
+    public LinkedList<Vertex> iterativeDeepening(Vertex first, Vertex last) {
+        if (testing) {
+            System.out.println("should be true");
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(15, 2)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(15, 5)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(18, 4)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(15, 6)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(14, 1)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(17, 4)));
+            System.out.println("--------------------");
+            System.out.println("should be false");
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(17, 1)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(17, 9)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(19, 6)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(3, 7)));
+            System.out.println(isReachable(new Vertex(16, 4), new Vertex(18, 13)));
+
+            System.out.println(isReachable(new Vertex(14, 21), new Vertex(15, 9)));
+            System.out.println(isReachable(new Vertex(14, 1), new Vertex(15, 2)));
+            return new LinkedList<>();
+        } else {
+            for (int depth = 1; true; depth++) {
+                LinkedList<Vertex> route = depthFirst(first, last, depth);
+                if (route != null) return route;
+            }
+        }
+
+
     }
 
     private LinkedList<Vertex> depthFirst(Vertex first, Vertex last, int depth) {
-//        if (depth == 0) {
-//            return null;
-//        } else if (first.equals(last)) {
-//            LinkedList<Vertex> route = new LinkedList<Vertex>();
-//            route.add(first);
-//            return route;
-//        } else {
-//            List<Vertex> nexts = nextConfigs(first);
-//            for (Vertex next : nexts) {
-//                LinkedList<Vertex> route = depthFirst(next, last, depth - 1);
-//                if (route != null) {
-//                    route.addFirst(first);
-//                    return route;
-//                }
-//            }
-//            return null;
-//        }
-        LinkedList<Vertex> route = new LinkedList<Vertex>();
-        route.add(first);
-        route.add(last);
-
-        return route;
+        if (depth == 0) {
+            return null;
+        } else if (first.equals(last)) {
+            LinkedList<Vertex> route = new LinkedList<Vertex>();
+            route.add(first);
+            return route;
+        } else {
+            List<Vertex> nexts = nextConfigs(first);
+            for (Vertex next : nexts) {
+                LinkedList<Vertex> route = depthFirst(next, last, depth - 1);
+                if (route != null) {
+                    route.addFirst(first);
+                    return route;
+                }
+            }
+            return null;
+        }
     }
+
 }
