@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class JourneyPlanner {
-    private static ArrayList<Vertex[]> puzzles;
 
     /**
      * Reads in all the rhombuses until it reaches an empty line then reads in puzzles
@@ -52,11 +51,17 @@ public class JourneyPlanner {
         return rhombus;
     }
 
+    private static ArrayList<Vertex[]> puzzles;
+    private static HashMap<Vertex, ArrayList<Vertex>> cache;
+    public static HashSet<Vertex> invalid;
+    private static final boolean testing = true;
+
 
     public static void main(String[] args) throws IOException {
         // if it can't find the file use me:
         // System.out.println(System.getProperty("user.dir"));;
         cache = new HashMap<>();
+        invalid = new HashSet<>();
 
         String file_name = "jl653.csv";
         if (args.length == 1) {
@@ -75,7 +80,7 @@ public class JourneyPlanner {
                             .collect(Collectors.joining(" ")).getBytes()
             );
             FormatChecker.check(output_path);
-            if (testing){
+            if (testing) {
                 break;
             }
         }
@@ -84,7 +89,6 @@ public class JourneyPlanner {
 
     private ArrayList<Vertex[]> rhombuses;
 
-    private static HashMap<Vertex, ArrayList<Vertex>> cache;
 
     public JourneyPlanner(ArrayList<Vertex[]> rhombus) {
         this.rhombuses = rhombus;
@@ -126,7 +130,7 @@ public class JourneyPlanner {
             HashSet<Vertex> set = new HashSet<>();
             for (Vertex[] rhombus : rhombuses) {
                 for (Vertex vertex : rhombus) {
-                    if (!set.contains(vertex) && isReachable(state, vertex)) {
+                    if (!invalid.contains(vertex) && !set.contains(vertex) && isReachable(state, vertex)) {
                         set.add(vertex);
                     }
                 }
@@ -142,7 +146,6 @@ public class JourneyPlanner {
     }
 
     private boolean isReachable(Vertex start, Vertex end) {
-//        System.out.println(String.format("start %s end %s", start, end));
         boolean check = true;
         Vertex[] rhombus;
         for (int i = 0; i < rhombuses.size(); i++) {
@@ -155,22 +158,24 @@ public class JourneyPlanner {
                             || Vertex.linesIntersect(start, end, rhombus[1], rhombus[3])
                             || Vertex.linesIntersect(start, end, rhombus[2], rhombus[3])
             );
-//                    ||
-//                    !(
-//                    Vertex.linesIntersect(end, start, rhombus[0], rhombus[1])
-//                            || Vertex.linesIntersect(end, start, rhombus[0], rhombus[2])
-//                            || Vertex.linesIntersect(end, start, rhombus[1], rhombus[3])
-//                            || Vertex.linesIntersect(end, start, rhombus[2], rhombus[3])
-//            );
 
             if (!check) {
                 return false;
             }
+
+            // if it's reachable then is it inside a rhombus
+            if (
+                    Vertex.vertexInsideRhombus(end, rhombus[0], rhombus[1], rhombus[2], rhombus[3]) &&
+                    !(end.equals(rhombus[0]) || end.equals(rhombus[1]) || end.equals(rhombus[2]) || end.equals(rhombus[3]))
+            ) {
+                invalid.add(end);
+                return false;
+            }
+
         }
         return check;
     }
 
-    private static boolean testing = true;
 
     public LinkedList<Vertex> iterativeDeepening(Vertex first, Vertex last) {
         if (testing) {
@@ -189,8 +194,21 @@ public class JourneyPlanner {
             System.out.println(isReachable(new Vertex(16, 4), new Vertex(3, 7)));
             System.out.println(isReachable(new Vertex(16, 4), new Vertex(18, 13)));
 
+            // this one should be picked up
             System.out.println(isReachable(new Vertex(14, 21), new Vertex(15, 9)));
+
+            // going diagoonally thruogh
             System.out.println(isReachable(new Vertex(14, 1), new Vertex(15, 2)));
+
+            System.out.println(isReachable(new Vertex(2, 15), new Vertex(4, 16)));
+
+            System.out.println("----------------------");
+            System.out.println(Vertex.vertexInsideRhombus(new Vertex(4, 16), rhombuses.get(13)[0], rhombuses.get(13)[1], rhombuses.get(13)[2], rhombuses.get(13)[3]));
+            System.out.println(Vertex.vertexInsideRhombus(new Vertex(4, 19), rhombuses.get(13)[0], rhombuses.get(13)[1], rhombuses.get(13)[2], rhombuses.get(13)[3]));
+            System.out.println("SHOULD BE FALSE");
+            System.out.println(Vertex.vertexInsideRhombus(new Vertex(2, 18), rhombuses.get(13)[0], rhombuses.get(13)[1], rhombuses.get(13)[2], rhombuses.get(13)[3]));
+            System.out.println(Vertex.vertexInsideRhombus(new Vertex(20, 0), rhombuses.get(13)[0], rhombuses.get(13)[1], rhombuses.get(13)[2], rhombuses.get(13)[3]));
+
             return new LinkedList<>();
         } else {
             for (int depth = 1; true; depth++) {
