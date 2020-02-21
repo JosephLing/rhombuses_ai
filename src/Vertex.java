@@ -1,7 +1,4 @@
-import java.math.*;
-import java.util.Arrays;
-
-/**
+/*
  * user: jl653
  * name: Joseph Ling
  */
@@ -38,47 +35,25 @@ public class Vertex implements Comparable<Vertex> {
         } else return false;
     }
 
-    public static double distance(Vertex a, Vertex b){
-        return Math.sqrt(Math.pow((a.x - b.x),2) + Math.pow((a.y - b.y),2));
-    }
-
-    public static double area(Vertex a, Vertex b,Vertex c,Vertex d){
-        return (distance(a, c) * distance(b, d));
-    }
-
-    public static int area(Vertex a, Vertex b, Vertex c){
-        // uses the shoe lace formula
-        return  (((a.get_x() - c.get_x()) * (b.get_y() - a.get_y())) - ((c.get_y() - a.get_y()) * (a.get_x() - b.get_x())));
-    }
-
-    public static void main(String[] args){
-        System.out.println(area(new Vertex(-3,4), new Vertex(1,-2), new Vertex(5, 5)));;
-        System.out.println(area(new Vertex(30,4), new Vertex(1,-2), new Vertex(5, 5)));;
-
-        System.out.println(area(new Vertex(-3,1), new Vertex(1,5), new Vertex(-2, 8)));;
-        System.out.println(area(new Vertex(-5,7), new Vertex(-4,-5), new Vertex(4, 5)));;
+    public static int area(Vertex a, Vertex b, Vertex c) {
+        // uses the shoelace formula
+        return (((a.get_x() - c.get_x()) * (b.get_y() - a.get_y())) - ((c.get_y() - a.get_y()) * (a.get_x() - b.get_x())));
     }
 
 
     /**
-     * The key aspect is that a,b,c,d
-     *    b ---------- c
-     *   /            /
-     *  /           /
-     * a --------- d
-     *
-     * format
-     * with p being the point that you are checking for
+     * Calculates the area of the 4 triangles you get split up a rhombus by its four points. Each having to have the
+     * 'p' vertex we are checking in it. In doing so if they add up too the area of the rhomobus then it's inside
+     * otherwise it's outside. However it is quicker to check if the area is less than 0 for any of the given triangles.
      */
-    public static boolean vertexInsideRhombus(Vertex p, Vertex a, Vertex b, Vertex c, Vertex d){
-        // this shouldn't work but it does.... if shoelace formula is less than 0 then false
-        int[] areas = new int[] {area(p,a,b),area(p,b,c),area(p,c,d),area(p,d,a)};
+    public static boolean vertexInsideRhombus(Vertex p, Vertex a, Vertex b, Vertex c, Vertex d) {
+        int[] areas = new int[]{area(p, a, b), area(p, b, c), area(p, c, d), area(p, d, a)};
         for (int area : areas) {
             if (area < 0) {
                 return false;
             }
         }
-        return  true;
+        return true;
     }
 
     public static boolean vertexIntersect(Vertex u, Vertex v1, Vertex v2) {
