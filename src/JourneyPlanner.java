@@ -18,7 +18,7 @@ public class JourneyPlanner {
      *
      * @param pathToCsv string
      */
-    private static void loadConfig(String pathToCsv) throws IOException {
+    private static void loadConfig(String pathToCsv) throws Exception {
         rhombuses = new ArrayList<>();
         puzzles = new ArrayList<>();
         String row;
@@ -40,8 +40,10 @@ public class JourneyPlanner {
                         new Vertex(Integer.parseInt(data[6]), Integer.parseInt(data[7])),
                 });
 
-            } else {
+            } else if (!problems){
                 problems = true;
+            }else{
+                throw new Exception("invalid format of csv found");
             }
 
         }
@@ -60,7 +62,7 @@ public class JourneyPlanner {
      * problem. Writing out the solution to the problem as i.txt (i being the index) and checking the format
      * at the same of the solution.
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         // if it can't find the file use me:
         // System.out.println(System.getProperty("user.dir"));;
         cache = new HashMap<>();
@@ -120,8 +122,9 @@ public class JourneyPlanner {
      */
     public List<Vertex> nextConfigs(Vertex state) {
         // start at the current state and return all possible vertexs to go too
-
-        if (cache.get(state) == null) {
+        if (cache.containsKey(state)) {
+            return cache.get(state);
+        } else {
             HashSet<Vertex> set = new HashSet<>();
             for (Vertex[] rhombus : rhombuses) {
                 for (Vertex vertex : rhombus) {
@@ -133,9 +136,6 @@ public class JourneyPlanner {
             ArrayList<Vertex> results = new ArrayList<>(set);
             cache.put(state, results);
             return results;
-
-        } else {
-            return cache.get(state);
         }
 
     }
